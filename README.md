@@ -1,6 +1,6 @@
 # Snake-Game-QR
 
-A HMTL snake game encoded in qr code.
+A HTML snake game encoded in qr code.
 
 ![QR-Code](./qr-code.png)
 
