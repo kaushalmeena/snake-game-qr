@@ -1,6 +1,6 @@
 # Snake-Game-QR
 
-A HTML snake game encoded in qr code.
+A HTML snake game encoded in QR code.
 
 ![QR-Code](./qr-code.png)
 
@@ -44,4 +44,4 @@ $ npm run decode
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
