@@ -19,7 +19,7 @@ To set up everything in your local machine, you need to follow these steps:
 
 ```bash
 $ git clone https://github.com/kaushalmeena/snake-game-qr.git
-$ cd chatbuddy
+$ cd snake-game-qr
 ```
 
 2. Install project dependencies using npm:
