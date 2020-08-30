@@ -102,7 +102,7 @@
         if (snake.cells[i].x === food.x && snake.cells[i].y === food.y) {
           // Increase snake length
           snake.maxCells++;
-          // Canvas is 400x400 which is 25x25 BLOCK_SIZEs 
+          // Generate random coordinates for food
           food.x = getRandomInt(0, ROWS) * BLOCK_SIZE;
           food.y = getRandomInt(0, COLS) * BLOCK_SIZE;
         }
