@@ -1,0 +1,30 @@
+{
+  "name": "snake-game-qr",
+  "version": "1.0.0",
+  "description": "HTML snake game encoded in QR code",
+  "scripts": {
+    "encode": "node encode.js",
+    "decode": "node decode.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaushalmeena/snake-game-qr.git"
+  },
+  "keywords": [
+    "snake",
+    "game",
+    "qr"
+  ],
+  "author": "Kaushal Meena",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kaushalmeena/snake-game-qr/issues"
+  },
+  "homepage": "https://github.com/kaushalmeena/snake-game-qr#readme",
+  "dependencies": {
+    "html-minifier": "^4.0.0",
+    "jimp": "^0.16.1",
+    "jsqr": "^1.3.1",
+    "qrcode": "^1.4.4"
+  }
+}
