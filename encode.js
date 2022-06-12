@@ -1,28 +1,29 @@
-var fs = require("fs");
-var minify = require("html-minifier").minify;
-var QRCode = require("qrcode")
+const fs = require("fs");
+const { minify } = require("html-minifier-terser");
+const QRCode = require("qrcode");
 
-// Read index.html file contents
-fs.readFile("index.html", "utf8", function (err, data) {
+// Read input.html file contents
+fs.readFile("input.html", "utf8", async (err, data) => {
   if (err) {
     if (err.code === "ENOENT") {
-      throw new Error("index.html file not found.")
+      throw new Error("input.html file not found.");
     } else {
       throw err;
     }
   }
-  // Minify contents of index.html
-  var minifiedData = minify(data, {
-    caseSensitive: true,
+  // Minify contents of input.html
+  const minifiedData = await minify(data, {
     collapseWhitespace: true,
-    removeComments: true,
-    removeRedundantAttributes: true,
-    removeTagWhitespace: true,
+    useShortDoctype: true,
+    minifyJS: {
+      mangle: {
+        toplevel: true,
+      },
+    },
     minifyCSS: true,
-    minifyJS: true
   });
   // Generate QRCode for minified data
-  QRCode.toFile("qr-code.png", minifiedData, function (err) {
+  QRCode.toFile("qr-code.png", minifiedData, (err) => {
     if (err) {
       throw err;
     }
