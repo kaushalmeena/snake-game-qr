@@ -34,13 +34,13 @@ $ npm install
 
 ## Usage
 
-To create qr-code.png file from index.html run:
+To create qr-code.png file from input.html run:
 
 ```bash
 $ npm run encode
 ```
 
-To create snake-game.html file from qr-code.png run:
+To create output.html file from qr-code.png run:
 
 ```bash
 $ npm run decode

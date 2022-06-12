@@ -16,15 +16,15 @@
   <body>
     <canvas width="500" height="500" id="game"></canvas>
     <script>
-      var canvas = document.getElementById("game");
-      var context = canvas.getContext("2d");
+      const canvas = document.getElementById("game");
+      const context = canvas.getContext("2d");
 
-      var BLOCK_SIZE = 16;
-      var GAME_SPEED = 200;
-      var ROWS = canvas.width / BLOCK_SIZE;
-      var COLS = canvas.height / BLOCK_SIZE;
+      const BLOCK_SIZE = 16;
+      const GAME_SPEED = 200;
+      const ROWS = canvas.width / BLOCK_SIZE;
+      const COLS = canvas.height / BLOCK_SIZE;
 
-      var snake = {
+      const snake = {
         x: 160,
         y: 160,
 
@@ -39,13 +39,13 @@
         maxCells: 4,
       };
 
-      var food = {
+      const food = {
         x: 320,
         y: 320,
       };
 
-      var i;
-      var j;
+      let i;
+      let j;
 
       // Get random whole numbers in a specific range
       function getRandomInt(min, max) {
