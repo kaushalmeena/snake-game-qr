@@ -1,161 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <title>Snake-Game</title>
+    <style>
+      #game {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #e5e7e9;
+      }
+    </style>
+  </head>
 
-<head>
-  <title>Snake-Game</title>
-  <style>
-    #game {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: #E5E7E9;
-    }
-  </style>
-</head>
+  <body>
+    <canvas width="500" height="500" id="game"></canvas>
+    <script>
+      var canvas = document.getElementById("game");
+      var context = canvas.getContext("2d");
 
-<body>
-  <canvas width="500" height="500" id="game"></canvas>
-  <script>
-    var canvas = document.getElementById("game");
-    var context = canvas.getContext("2d");
+      var BLOCK_SIZE = 16;
+      var GAME_SPEED = 200;
+      var ROWS = canvas.width / BLOCK_SIZE;
+      var COLS = canvas.height / BLOCK_SIZE;
 
-    var BLOCK_SIZE = 16;
-    var GAME_SPEED = 200;
-    var ROWS = canvas.width / BLOCK_SIZE;
-    var COLS = canvas.height / BLOCK_SIZE;
+      var snake = {
+        x: 160,
+        y: 160,
 
-    var snake = {
-      x: 160,
-      y: 160,
+        // Snake velocity, moves one BLOCK_SIZE length every frame in either the x or y direction
+        dx: BLOCK_SIZE,
+        dy: 0,
 
-      // Snake velocity, moves one BLOCK_SIZE length every frame in either the x or y direction
-      dx: BLOCK_SIZE,
-      dy: 0,
+        // Keep track of all BLOCK_SIZEs the snake body occupies
+        cells: [],
 
-      // Keep track of all BLOCK_SIZEs the snake body occupies
-      cells: [],
+        // Length of the snake, grows when eating a food
+        maxCells: 4,
+      };
 
-      // Length of the snake, grows when eating a food
-      maxCells: 4
-    };
+      var food = {
+        x: 320,
+        y: 320,
+      };
 
-    var food = {
-      x: 320,
-      y: 320
-    };
+      var i;
+      var j;
 
-    var i;
-    var j;
-
-    // Get random whole numbers in a specific range
-    function getRandomInt(min, max) {
-      return Math.floor(Math.random() * (max - min)) + min;
-    }
-
-    // Game loop
-    function loop() {
-      // Clear canvas screen
-      context.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Move snake by it's velocity
-      snake.x += snake.dx;
-      snake.y += snake.dy;
-
-      // Wrap snake position horizontally on edge of screen
-      if (snake.x < 0) {
-        snake.x = canvas.width - BLOCK_SIZE;
-      } else if (snake.x >= canvas.width) {
-        snake.x = 0;
+      // Get random whole numbers in a specific range
+      function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min;
       }
 
-      // Wrap snake position vertically on edge of screen
-      if (snake.y < 0) {
-        snake.y = canvas.height - BLOCK_SIZE;
-      } else if (snake.y >= canvas.height) {
-        snake.y = 0;
-      }
+      // Game loop
+      function loop() {
+        // Clear canvas screen
+        context.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Keep track of where snake has been, front of the array is always the head
-      snake.cells.unshift({
-        x: snake.x,
-        y: snake.y
-      });
+        // Move snake by it's velocity
+        snake.x += snake.dx;
+        snake.y += snake.dy;
 
-      // Remove cells as we move away from them
-      if (snake.cells.length > snake.maxCells) {
-        snake.cells.pop();
-      }
-
-      // Draw food
-      context.fillStyle = "#45B39D";
-      context.fillRect(food.x, food.y, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
-
-      // Draw snake one cell at a time
-      context.fillStyle = "#566573";
-
-      for (i = 0; i < snake.cells.length; i++) {
-        // Drawing 1 px smaller than the BLOCK_SIZE creates a BLOCK_SIZE effect in the snake body so you can see how long it is
-        context.fillRect(snake.cells[i].x, snake.cells[i].y, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
-
-        // When snake ate food
-        if (snake.cells[i].x === food.x && snake.cells[i].y === food.y) {
-          // Increase snake length
-          snake.maxCells++;
-          // Generate random coordinates for food
-          food.x = getRandomInt(0, ROWS) * BLOCK_SIZE;
-          food.y = getRandomInt(0, COLS) * BLOCK_SIZE;
+        // Wrap snake position horizontally on edge of screen
+        if (snake.x < 0) {
+          snake.x = canvas.width - BLOCK_SIZE;
+        } else if (snake.x >= canvas.width) {
+          snake.x = 0;
         }
 
-        // Check collision with all cells after this one (modified bubble sort)
-        for (j = i + 1; j < snake.cells.length; j++) {
-          // Snake occupies same space as a body part, reset game
-          if (snake.cells[i].x === snake.cells[j].x && snake.cells[i].y === snake.cells[j].y) {
-            snake.x = 160;
-            snake.y = 160;
-            snake.cells = [];
-            snake.maxCells = 4;
-            snake.dx = BLOCK_SIZE;
-            snake.dy = 0;
+        // Wrap snake position vertically on edge of screen
+        if (snake.y < 0) {
+          snake.y = canvas.height - BLOCK_SIZE;
+        } else if (snake.y >= canvas.height) {
+          snake.y = 0;
+        }
+
+        // Keep track of where snake has been, front of the array is always the head
+        snake.cells.unshift({
+          x: snake.x,
+          y: snake.y,
+        });
+
+        // Remove cells as we move away from them
+        if (snake.cells.length > snake.maxCells) {
+          snake.cells.pop();
+        }
+
+        // Draw food
+        context.fillStyle = "#45B39D";
+        context.fillRect(food.x, food.y, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+
+        // Draw snake one cell at a time
+        context.fillStyle = "#566573";
+
+        for (i = 0; i < snake.cells.length; i++) {
+          // Drawing 1 px smaller than the BLOCK_SIZE creates a BLOCK_SIZE effect in the snake body so you can see how long it is
+          context.fillRect(
+            snake.cells[i].x,
+            snake.cells[i].y,
+            BLOCK_SIZE - 1,
+            BLOCK_SIZE - 1
+          );
+
+          // When snake ate food
+          if (snake.cells[i].x === food.x && snake.cells[i].y === food.y) {
+            // Increase snake length
+            snake.maxCells++;
+            // Generate random coordinates for food
             food.x = getRandomInt(0, ROWS) * BLOCK_SIZE;
             food.y = getRandomInt(0, COLS) * BLOCK_SIZE;
           }
+
+          // Check collision with all cells after this one (modified bubble sort)
+          for (j = i + 1; j < snake.cells.length; j++) {
+            // Snake occupies same space as a body part, reset game
+            if (
+              snake.cells[i].x === snake.cells[j].x &&
+              snake.cells[i].y === snake.cells[j].y
+            ) {
+              snake.x = 160;
+              snake.y = 160;
+              snake.cells = [];
+              snake.maxCells = 4;
+              snake.dx = BLOCK_SIZE;
+              snake.dy = 0;
+              food.x = getRandomInt(0, ROWS) * BLOCK_SIZE;
+              food.y = getRandomInt(0, COLS) * BLOCK_SIZE;
+            }
+          }
         }
       }
-    }
 
-    // Listen to keyboard events to move the snake
-    document.addEventListener("keydown", function (event) {
-      // Prevent snake from backtracking on itself by checking that it's 
-      // not already moving on the same axis (pressing left while moving
-      // left won't do anything, and pressing right while moving left
-      // shouldn't let you collide with your own body)
+      // Listen to keyboard events to move the snake
+      document.addEventListener("keydown", function (event) {
+        // Prevent snake from backtracking on itself by checking that it's
+        // not already moving on the same axis (pressing left while moving
+        // left won't do anything, and pressing right while moving left
+        // shouldn't let you collide with your own body)
 
-      // Left arrow key
-      if (event.which === 37 && snake.dx === 0) {
-        snake.dx = -BLOCK_SIZE;
-        snake.dy = 0;
-      }
-      // Up arrow key
-      else if (event.which === 38 && snake.dy === 0) {
-        snake.dy = -BLOCK_SIZE;
-        snake.dx = 0;
-      }
-      // Right arrow key
-      else if (event.which === 39 && snake.dx === 0) {
-        snake.dx = BLOCK_SIZE;
-        snake.dy = 0;
-      }
-      // Down arrow key
-      else if (event.which === 40 && snake.dy === 0) {
-        snake.dy = BLOCK_SIZE;
-        snake.dx = 0;
-      }
-    });
+        // Left arrow key
+        if (event.which === 37 && snake.dx === 0) {
+          snake.dx = -BLOCK_SIZE;
+          snake.dy = 0;
+        }
+        // Up arrow key
+        else if (event.which === 38 && snake.dy === 0) {
+          snake.dy = -BLOCK_SIZE;
+          snake.dx = 0;
+        }
+        // Right arrow key
+        else if (event.which === 39 && snake.dx === 0) {
+          snake.dx = BLOCK_SIZE;
+          snake.dy = 0;
+        }
+        // Down arrow key
+        else if (event.which === 40 && snake.dy === 0) {
+          snake.dy = BLOCK_SIZE;
+          snake.dx = 0;
+        }
+      });
 
-    // Start game loop
-    setInterval(loop, GAME_SPEED);
-  </script>
-</body>
-
+      // Start game loop
+      setInterval(loop, GAME_SPEED);
+    </script>
+  </body>
 </html>
