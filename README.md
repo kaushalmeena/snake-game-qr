@@ -12,7 +12,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 To install and run this project you need:
 
-- [NodeJS](https://nodejs.org/ "NodeJS")
+- [Bun](https://bun.sh/ "Bun")
 - [git](https://git-scm.com/downloads "git") (only to clone this repository)
 
 ### Installation
@@ -29,7 +29,7 @@ $ cd snake-game-qr
 2. Install project dependencies using npm:
 
 ```bash
-$ npm install
+$ bun install
 ```
 
 ## Usage
@@ -37,13 +37,13 @@ $ npm install
 To create qr-code.png file from input.html run:
 
 ```bash
-$ npm run encode
+$ bun run encode
 ```
 
 To create output.html file from qr-code.png run:
 
 ```bash
-$ npm run decode
+$ bun run decode
 ```
 
 ## License
