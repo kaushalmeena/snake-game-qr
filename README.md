@@ -22,14 +22,14 @@ To set up everything in your local machine, you need to follow these steps:
 1. Clone this repo and then change directory to the `snake-game-qr` folder:
 
 ```bash
-$ git clone https://github.com/kaushalmeena/snake-game-qr.git
-$ cd snake-game-qr
+git clone https://github.com/kaushalmeena/snake-game-qr.git
+cd snake-game-qr
 ```
 
 2. Install project dependencies using npm:
 
 ```bash
-$ bun install
+bun install
 ```
 
 ## Usage
@@ -37,13 +37,13 @@ $ bun install
 To create qr-code.png file from input.html run:
 
 ```bash
-$ bun run encode
+bun run encode
 ```
 
 To create output.html file from qr-code.png run:
 
 ```bash
-$ bun run decode
+bun run decode
 ```
 
 ## License
