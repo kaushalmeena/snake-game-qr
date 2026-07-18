@@ -1,0 +1,35 @@
+import type { Options as MinifyOptions } from "html-minifier-terser";
+
+/** Shared file paths so encode and decode stay in sync. */
+export const INPUT_HTML = "input.html";
+export const OUTPUT_HTML = "output.html";
+export const QR_CODE = "qr-code.png";
+
+/** HTML minification options tuned to squeeze the game into a QR code. */
+export const MINIFY_OPTIONS: MinifyOptions = {
+  collapseWhitespace: true,
+  useShortDoctype: true,
+  minifyCSS: true,
+  minifyJS: { mangle: { toplevel: true } },
+};
+
+/**
+ * Prefix for a base64 HTML data URL. Encoding the game as a data URL (instead
+ * of raw HTML) means a phone's QR scanner treats it as a link and offers to
+ * open it in the browser. Base64 is used over percent-encoding because it has
+ * no QR-unfriendly characters and a smaller, predictable overhead for HTML.
+ */
+export const DATA_URL_PREFIX = "data:text/html;base64,";
+
+/** Wrap minified HTML into a base64 `text/html` data URL. */
+export function toDataUrl(html: string): string {
+  return DATA_URL_PREFIX + Buffer.from(html, "utf8").toString("base64");
+}
+
+/** Recover the HTML from a base64 `text/html` data URL. */
+export function fromDataUrl(url: string): string {
+  if (!url.startsWith(DATA_URL_PREFIX)) {
+    throw new Error("QR payload is not an HTML data URL");
+  }
+  return Buffer.from(url.slice(DATA_URL_PREFIX.length), "base64").toString("utf8");
+}
