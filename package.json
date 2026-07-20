@@ -1,22 +1,22 @@
 {
-  "name": "snake-game-qr",
+  "name": "snake-golf",
   "version": "1.0.0",
-  "description": "HTML snake game encoded in QR code",
+  "description": "Models compete to encode a playable HTML snake game into a QR code",
   "type": "module",
   "scripts": {
-    "encode": "bun scripts/encode.ts",
-    "decode": "bun scripts/decode.ts",
-    "compare": "bun scripts/compare.ts",
-    "typecheck": "tsc --noEmit"
+    "encode": "bun scripts/encode.js",
+    "decode": "bun scripts/decode.js",
+    "compare": "bun scripts/compare.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kaushalmeena/snake-game-qr.git"
+    "url": "git+https://github.com/kaushalmeena/snake-golf.git"
   },
   "keywords": [
     "snake",
     "game",
-    "qr"
+    "qr",
+    "code-golf"
   ],
   "license": "MIT",
   "dependencies": {
@@ -24,12 +24,5 @@
     "jimp": "^1.6.1",
     "jsqr": "^1.4.0",
     "qrcode": "^1.5.4"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.3.14",
-    "@types/html-minifier-terser": "^7.0.2",
-    "@types/node": "^26.1.1",
-    "@types/qrcode": "^1.5.6",
-    "typescript": "^7.0.2"
   }
 }

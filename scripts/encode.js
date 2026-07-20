@@ -1,8 +1,8 @@
 import { mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 import QRCode from "qrcode";
-import { runModels, winner } from "./models";
-import { INPUT_HTML, QR_CODE, toDataUrl } from "./config";
+import { runModels, winner } from "../lib/models";
+import { INPUT_HTML, QR_CODE, toDataUrl } from "../lib/config";
 
 const html = await Bun.file(INPUT_HTML).text();
 

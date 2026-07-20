@@ -1,13 +1,9 @@
 import { Jimp } from "jimp";
 import jsQR from "jsqr";
-import { fromDataUrl, OUTPUT_HTML, QR_CODE } from "./config";
+import { fromDataUrl, OUTPUT_HTML, QR_CODE } from "../lib/config";
 
 const { bitmap } = await Jimp.read(QR_CODE);
-const result = jsQR(
-  new Uint8ClampedArray(bitmap.data),
-  bitmap.width,
-  bitmap.height
-);
+const result = jsQR(new Uint8ClampedArray(bitmap.data), bitmap.width, bitmap.height);
 
 if (!result) {
   throw new Error(`No QR code found in ${QR_CODE}`);
