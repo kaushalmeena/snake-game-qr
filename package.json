@@ -6,6 +6,7 @@
   "scripts": {
     "encode": "bun src/encode.ts",
     "decode": "bun src/decode.ts",
+    "compare": "bun src/compare.ts",
     "typecheck": "tsc --noEmit"
   },
   "repository": {

@@ -1,17 +1,7 @@
-import type { Options as MinifyOptions } from "html-minifier-terser";
-
 /** Shared file paths so encode and decode stay in sync. */
 export const INPUT_HTML = "input.html";
 export const OUTPUT_HTML = "output.html";
 export const QR_CODE = "qr-code.png";
-
-/** HTML minification options tuned to squeeze the game into a QR code. */
-export const MINIFY_OPTIONS: MinifyOptions = {
-  collapseWhitespace: true,
-  useShortDoctype: true,
-  minifyCSS: true,
-  minifyJS: { mangle: { toplevel: true } },
-};
 
 /**
  * Prefix for a base64 HTML data URL. Encoding the game as a data URL (instead

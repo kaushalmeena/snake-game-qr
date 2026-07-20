@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Snake Game</title>
+  </head>
+  <body style="margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #d5dbdb; touch-action: none">
+    <canvas id="board" width="512" height="512" style="border: 2px solid #566573"></canvas>
+    <script>
+      // ── Board geometry ──────────────────────────────────────────────────
+      const CELL_SIZE = 16; // pixel size of one grid cell
+      const GRID_CELLS = 32; // the board is GRID_CELLS x GRID_CELLS cells (32 * 16 = 512px)
+
+      // ── Colors ──────────────────────────────────────────────────────────
+      const BOARD_COLOR = "#e5e7e9";
+      const FOOD_COLOR = "#45b39d";
+      const SNAKE_COLOR = "#566573";
+
+      // ── Pacing: the game speeds up as the snake grows ───────────────────
+      const BASE_TICK_MS = 120; // delay between moves at the start
+      const MIN_TICK_MS = 60; // fastest the game is allowed to get
+      const SPEEDUP_PER_CELL_MS = 2; // each cell of growth shaves this much off
+
+      // ── Gameplay constants ──────────────────────────────────────────────
+      const START_LENGTH = 4;
+      const MIN_SWIPE_DISTANCE = 10; // pixels; anything shorter is a tap
+      const BEST_LENGTH_KEY = "snakeBestLength"; // localStorage key for the high score
+
+      const DIRECTIONS = {
+        ArrowLeft: { x: -1, y: 0 },
+        ArrowUp: { x: 0, y: -1 },
+        ArrowRight: { x: 1, y: 0 },
+        ArrowDown: { x: 0, y: 1 },
+      };
+
+      const canvas = document.getElementById("board");
+      const context = canvas.getContext("2d");
+      context.font = "16px monospace"; // for the score line
+
+      // ── High score persistence ──────────────────────────────────────────
+      // localStorage can be unavailable or throw (private mode, opaque
+      // origins such as data: URLs), so both helpers degrade gracefully.
+      function loadBestLength() {
+        try {
+          return Number(localStorage.getItem(BEST_LENGTH_KEY)) || 0;
+        } catch {
+          return 0;
+        }
+      }
+
+      function saveBestLength(value) {
+        try {
+          localStorage.setItem(BEST_LENGTH_KEY, value);
+        } catch {
+          // Storage is unavailable: the high score just won't survive reloads.
+        }
+      }
+
+      // ── Game state ──────────────────────────────────────────────────────
+      let snake; // array of {x, y} cells, head first
+      let stepX, stepY; // current direction: (±1, 0) or (0, ±1)
+      let foodX, foodY; // cell the food is on
+      let snakeLength; // how long the snake currently is
+      let bestLength = loadBestLength(); // longest snake ever achieved here
+      let touchStartX, touchStartY; // where the current swipe began
+
+      /** Random cell coordinate, 0 .. GRID_CELLS-1. */
+      function randomCell() {
+        return Math.floor(Math.random() * GRID_CELLS);
+      }
+
+      /** Start (or restart) a run: short snake in the middle, moving right. */
+      function reset() {
+        snake = [{ x: 16, y: 16 }];
+        stepX = 1;
+        stepY = 0;
+        foodX = randomCell();
+        foodY = randomCell();
+        snakeLength = START_LENGTH;
+      }
+      reset();
+
+      /** Change direction, ignoring reversals onto the snake's own neck. */
+      function turn(x, y) {
+        if (x === -stepX || y === -stepY) return;
+        stepX = x;
+        stepY = y;
+      }
+
+      // ── Controls: arrow keys… ───────────────────────────────────────────
+      window.addEventListener("keydown", (event) => {
+        const direction = DIRECTIONS[event.key];
+        if (direction) turn(direction.x, direction.y);
+      });
+
+      // ── …and swipes, for touch screens ──────────────────────────────────
+      window.addEventListener("touchstart", (event) => {
+        touchStartX = event.touches[0].clientX;
+        touchStartY = event.touches[0].clientY;
+      });
+
+      window.addEventListener("touchend", (event) => {
+        const deltaX = event.changedTouches[0].clientX - touchStartX;
+        const deltaY = event.changedTouches[0].clientY - touchStartY;
+        if (Math.hypot(deltaX, deltaY) < MIN_SWIPE_DISTANCE) return; // a tap, not a swipe
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+          turn(Math.sign(deltaX), 0);
+        } else {
+          turn(0, Math.sign(deltaY));
+        }
+      });
+
+      // ── Main loop ───────────────────────────────────────────────────────
+      function tick() {
+        // Schedule first, so the early return on death cannot stop the loop.
+        setTimeout(tick, Math.max(MIN_TICK_MS, BASE_TICK_MS - SPEEDUP_PER_CELL_MS * snakeLength));
+
+        // Next head cell, wrapping around all four edges
+        const head = {
+          x: (snake[0].x + stepX + GRID_CELLS) % GRID_CELLS,
+          y: (snake[0].y + stepY + GRID_CELLS) % GRID_CELLS,
+        };
+
+        // Ran into itself -> start over
+        if (snake.some((cell) => cell.x === head.x && cell.y === head.y)) {
+          reset();
+          return;
+        }
+
+        snake.unshift(head);
+
+        // Ate the food -> grow and respawn it
+        if (head.x === foodX && head.y === foodY) {
+          snakeLength++;
+          foodX = randomCell();
+          foodY = randomCell();
+        }
+        while (snake.length > snakeLength) {
+          snake.pop();
+        }
+
+        // Draw: board, food, snake, then the score line on top
+        context.fillStyle = BOARD_COLOR;
+        context.fillRect(0, 0, 512, 512);
+        context.fillStyle = FOOD_COLOR;
+        context.fillRect(foodX * CELL_SIZE, foodY * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1);
+        context.fillStyle = SNAKE_COLOR;
+        for (const cell of snake) {
+          context.fillRect(cell.x * CELL_SIZE, cell.y * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1);
+        }
+
+        if (snakeLength > bestLength) {
+          bestLength = snakeLength;
+          saveBestLength(bestLength);
+        }
+        context.fillText(`${snakeLength} | best ${bestLength}`, 8, 20);
+      }
+      tick();
+    </script>
+  </body>
+</html>
