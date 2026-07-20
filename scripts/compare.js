@@ -1,9 +1,9 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import QRCode from "qrcode";
-import { minify as baselineMinify, label as baselineLabel } from "../lib/baseline";
-import { runModels } from "../lib/models";
-import { INPUT_HTML, toDataUrl } from "../lib/config";
+import { minify as baselineMinify, label as baselineLabel } from "../lib/baseline.js";
+import { runModels } from "../lib/models.js";
+import { INPUT_HTML, toDataUrl } from "../lib/config.js";
 
 /**
  * The leaderboard: runs every model's submission in models/ against input.html
@@ -12,7 +12,7 @@ import { INPUT_HTML, toDataUrl } from "../lib/config";
  * in README.md (between the leaderboard markers) so it never drifts.
  */
 
-const README = resolve(import.meta.dir, "../README.md");
+const README = resolve(import.meta.dirname, "../README.md");
 const START = "<!-- leaderboard:start -->";
 const END = "<!-- leaderboard:end -->";
 
@@ -61,7 +61,7 @@ function toRow(rank, model, output, extra = {}) {
   };
 }
 
-const input = await Bun.file(INPUT_HTML).text();
+const input = await readFile(INPUT_HTML, "utf8");
 const results = await runModels(input);
 const failed = results.filter((r) => r.error);
 

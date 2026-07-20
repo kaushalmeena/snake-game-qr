@@ -20,16 +20,17 @@ input.html ──(smallest model + base64 data URL)──▶ qr-code.png ──(
 
 ## The leaderboard
 
-`models/` is a competition: one file per model, each turning the text of `input.html` into a page that must look and behave identically — byte count is the score. [`input/PROMPT.md`](./input/PROMPT.md) is the challenge prompt: it is self-contained, so to get a new contender just hand a model that file plus `input.html`, and drop the returned module into `models/` named after the model. The contract (plain-JS ES module, model-named kebab-case file, `meta` + `minify` exports) and the rules (derive the output from the input, deterministic, self-contained, ASCII, verified in a real browser) live in the prompt.
+`models/` is a competition: one file per model, each turning the text of `input.html` into a page that must look and behave identically — byte count is the score. [`input/PROMPT.md`](./input/PROMPT.md) is the challenge prompt: it is self-contained, so to get a new contender just hand a model that file plus `input.html`, and drop the returned module into `models/` named after the model. The contract (plain-JS ES module, model-named kebab-case file, `meta` + `minify` exports) and the rules (derive the output from the input, deterministic, self-contained, ASCII, verified in a real browser) live in the prompt. Every submission is held to that last rule by `npm test` ([`scripts/test-models.js`](./scripts/test-models.js)), a headless-browser harness that plays each output through the full behavioral checklist.
 
-Current standings (`bun run compare` regenerates this table):
+Current standings (`npm run compare` regenerates this table):
 
 <!-- leaderboard:start -->
 
 | # | model | html | data URL | QR code |
 |---|-------|-----:|---------:|---------|
 | 1 | [Claude Fable 5](./models/claude-fable-5.js) | 999 B | 1354 ch | v30 (137×137) |
-| 2 | [Gemini 1.5 Pro](./models/gemini-1.5-pro.js) | 1309 B | 1770 ch | v35 (157×157) |
+| 2 | [Claude Opus 4.8](./models/claude-opus-4.8.js) | 1003 B | 1362 ch | v30 (137×137) |
+| 3 | [Gemini 1.5 Pro](./models/gemini-1.5-pro.js) | 1309 B | 1770 ch | v35 (157×157) |
 |  | html-minifier-terser *(baseline tool)* | 1627 B | 2194 ch | v39 (173×173) |
 |  | `input.html` (raw) | 6885 B | 9202 ch | does not fit |
 
@@ -44,7 +45,7 @@ The runnable entrypoints (`encode`, `decode`, `compare`) live in [`scripts/`](./
 
 ### Requirements
 
-- [Bun](https://bun.sh/ "Bun") — runs the JavaScript directly, no build step
+- [Node.js](https://nodejs.org/ "Node.js") ≥ 20.11 — runs the JavaScript directly, no build step
 - [git](https://git-scm.com/downloads "git") (only to clone this repository)
 
 ### Installation
@@ -52,7 +53,7 @@ The runnable entrypoints (`encode`, `decode`, `compare`) live in [`scripts/`](./
 ```bash
 git clone https://github.com/kaushalmeena/snake-golf.git
 cd snake-golf
-bun install
+npm install
 ```
 
 ## Usage
@@ -60,19 +61,25 @@ bun install
 Generate `qr-code.png` from `input.html`:
 
 ```bash
-bun run encode
+npm run encode
 ```
 
 Recover `output.html` from `qr-code.png`:
 
 ```bash
-bun run decode
+npm run decode
 ```
 
 Rank every model's submission in `models/` by output size (HTML bytes, data-URL length, and the QR version each would need):
 
 ```bash
-bun run compare
+npm run compare
+```
+
+Run the behavioral test suite — a headless-browser ([Playwright](https://playwright.dev/)) harness that plays each model's output and the baseline through the whole checklist (keyboard + swipe steering, swipe threshold, wrap-around, eating, growth, self-collision, reset, score updates, best-score persistence, and graceful degradation when `localStorage` throws):
+
+```bash
+npm test           # first run only: npx playwright install chromium
 ```
 
 To play, open `output.html` (or `input.html`) in a browser and steer with the **arrow keys**, or **swipe** on a touch screen. Eat the food to grow — the game speeds up as you do; running into yourself resets the run. The board wraps around all four edges. Your best length is kept on the scoreboard and saved to `localStorage` where the browser allows it (a page opened from the QR code has an opaque origin, so there the best lasts until the tab closes).

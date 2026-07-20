@@ -1,10 +1,10 @@
-import { mkdir } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import QRCode from "qrcode";
-import { runModels, winner } from "../lib/models";
-import { INPUT_HTML, QR_CODE, toDataUrl } from "../lib/config";
+import { runModels, winner } from "../lib/models.js";
+import { INPUT_HTML, QR_CODE, toDataUrl } from "../lib/config.js";
 
-const html = await Bun.file(INPUT_HTML).text();
+const html = await readFile(INPUT_HTML, "utf8");
 
 // The leaderboard winner's output is what ships in the QR code.
 const best = winner(await runModels(html));

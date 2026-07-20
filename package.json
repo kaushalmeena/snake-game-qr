@@ -4,9 +4,13 @@
   "description": "Models compete to encode a playable HTML snake game into a QR code",
   "type": "module",
   "scripts": {
-    "encode": "bun scripts/encode.js",
-    "decode": "bun scripts/decode.js",
-    "compare": "bun scripts/compare.js"
+    "encode": "node scripts/encode.js",
+    "decode": "node scripts/decode.js",
+    "compare": "node scripts/compare.js",
+    "test": "node scripts/test-models.js"
+  },
+  "engines": {
+    "node": ">=20.11"
   },
   "repository": {
     "type": "git",
@@ -24,5 +28,8 @@
     "jimp": "^1.6.1",
     "jsqr": "^1.4.0",
     "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.1"
   }
 }

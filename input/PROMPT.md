@@ -99,7 +99,7 @@ Produce a single JavaScript ES module.
 Requirements:
 
 * Plain JavaScript (no TypeScript syntax)
-* Runs on Node or Bun
+* Runs on Node.js (the harness imports it as an ES module)
 * Filename is **your model's name in kebab-case** — one file per model, so a new
   submission from the same model replaces the old one
 
@@ -182,30 +182,7 @@ A complete regeneration is often smaller than preserving source structure.
 
 ## 4. Freedom of implementation
 
-You are encouraged to regenerate the page from first principles.
-
-Possible optimizations include:
-
-* rewriting rendering
-* rewriting state representation
-* replacing algorithms
-* merging logic
-* changing DOM structure
-* changing event handling
-* changing control flow
-* eliminating variables
-* algebraic simplification
-* arithmetic rewriting
-* expression rewriting
-* constant folding
-* dead-code elimination
-* state compression
-* event consolidation
-* string elimination
-* duplicate logic merging
-* replacing verbose constructs with shorter equivalents
-
-Any transformation is acceptable if externally observable behavior is preserved.
+You are encouraged to regenerate the page from first principles. Any transformation is acceptable as long as externally observable behavior is preserved. The techniques are yours to find.
 
 ---
 
@@ -278,28 +255,6 @@ Suggested pipeline:
 
 ---
 
-## 10. Verify before returning
-
-Before returning the generated page, verify that it behaves correctly in a real browser.
-
-At minimum, test:
-
-* keyboard controls
-* swipe controls
-* swipe threshold
-* wrap-around
-* eating food
-* snake growth
-* self-collision
-* reset behavior
-* score updates
-* best-score persistence
-* behavior when `localStorage` throws
-
-Do not submit code that has not been exercised.
-
----
-
 # Optimization Guidance
 
 Think of this as **program synthesis**, not source minification.
@@ -312,28 +267,7 @@ Optimize the generated HTML globally rather than performing local edits to the o
 
 # Optimization Checklist
 
-Before finishing, revisit the generated HTML and continue searching for additional semantics-preserving reductions until no further savings can be found.
-
-Consider at least:
-
-* HTML minimization
-* CSS minimization
-* JavaScript regeneration
-* Variable renaming
-* Scope collapsing
-* Function merging
-* Event consolidation
-* State encoding
-* Expression rewriting
-* Arithmetic simplification
-* Constant folding
-* String elimination
-* Duplicate logic merging
-* Dead-code elimination
-* DOM reduction
-* Canvas rendering simplification
-* Data representation optimization
-* Control-flow simplification
+Before finishing, revisit the generated HTML and keep searching for additional semantics-preserving reductions until no further savings can be found.
 
 ---
 
