@@ -100,18 +100,18 @@ Requirements:
 
 * Plain JavaScript (no TypeScript syntax)
 * Runs on Node or Bun
-* Filename is the algorithm name in **kebab-case**
+* Filename is **your model's name in kebab-case** — one file per model, so a new
+  submission from the same model replaces the old one
 
 Example:
 
-`constraint-driven-regenerator.js`
+`your-model-name.js`
 
 Export:
 
 ```js
 export const meta = {
-  algo: "constraint-driven-regenerator",
-  model: "Model Name"
+  model: "Your Model Name"
 };
 
 export function minify(inputHtml) {

@@ -1,10 +1,10 @@
 import QRCode from "qrcode";
-import { runAlgos } from "./algos";
+import { runModels } from "./models";
 import { INPUT_HTML, toDataUrl } from "./config";
 
 /**
- * The leaderboard: runs every algorithm in algos/ against input.html and
- * ranks them by output size — HTML bytes, data-URL length, and the QR code
+ * The leaderboard: runs every model's submission in models/ against input.html
+ * and ranks them by output size — HTML bytes, data-URL length, and the QR code
  * version each one would need. Raw input.html is shown as a reference.
  */
 
@@ -19,24 +19,22 @@ function qrCell(dataUrl: string): string {
 }
 
 const input = await Bun.file(INPUT_HTML).text();
-const results = await runAlgos(input);
+const results = await runModels(input);
 
 const ranked = results
   .filter((r) => !r.error)
   .sort((a, b) => Buffer.byteLength(a.output) - Buffer.byteLength(b.output));
 const failed = results.filter((r) => r.error);
 
-const row = (rank: string, algo: string, model: string, html: string, url: string, qr: string) =>
-  console.log(
-    rank.padEnd(4) + algo.padEnd(22) + model.padEnd(24) + html.padStart(6) + url.padStart(10) + `  ${qr}`
-  );
+const row = (rank: string, model: string, html: string, url: string, qr: string) =>
+  console.log(rank.padEnd(4) + model.padEnd(24) + html.padStart(6) + url.padStart(10) + `  ${qr}`);
 
-row("#", "algo", "model", "html", "data URL", "QR code");
+row("#", "model", "html", "data URL", "QR code");
 ranked.forEach((r, i) => {
   const dataUrl = toDataUrl(r.output);
-  row(`${i + 1}`, r.algo, r.model, `${Buffer.byteLength(r.output)}B`, `${dataUrl.length}ch`, qrCell(dataUrl));
+  row(`${i + 1}`, r.model, `${Buffer.byteLength(r.output)}B`, `${dataUrl.length}ch`, qrCell(dataUrl));
 });
-row("", "input.html (raw)", "—", `${Buffer.byteLength(input)}B`, `${toDataUrl(input).length}ch`, qrCell(toDataUrl(input)));
+row("", "input.html (raw)", `${Buffer.byteLength(input)}B`, `${toDataUrl(input).length}ch`, qrCell(toDataUrl(input)));
 
 for (const r of failed) {
   console.log(`\nFAILED ${r.file}: ${r.error}`);

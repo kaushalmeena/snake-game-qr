@@ -1,14 +1,13 @@
 import { minify as minifyHtml } from "html-minifier-terser";
 
 /**
- * Baseline: html-minifier-terser with every size option it offers turned on.
- * This is what a general-purpose tool can do without understanding the game —
- * the score to beat for any hand-written algorithm on the leaderboard.
+ * Baseline entrant: not an AI model but the general-purpose tool
+ * html-minifier-terser, with every size option it offers turned on. It stands
+ * on the leaderboard as the score any model must beat to be worth anything.
  */
 
 export const meta = {
-  algo: "html-minifier-terser",
-  model: "none (reference tool)",
+  model: "html-minifier-terser",
 };
 
 export function minify(inputHtml) {

@@ -16,7 +16,6 @@
  */
 
 export const meta = {
-  algo: "integer-cell-golf",
   model: "Claude Fable 5",
 };
 
@@ -24,7 +23,7 @@ export const meta = {
 function extract(html, re, what, group = 1) {
   const match = html.match(re);
   if (!match) {
-    throw new Error(`integer-cell-golf: could not find ${what} in input.html (pattern ${re})`);
+    throw new Error(`claude-fable-5: could not find ${what} in input.html (pattern ${re})`);
   }
   return match[group];
 }
@@ -32,7 +31,7 @@ function extract(html, re, what, group = 1) {
 /** Assert a logic pattern this algorithm relies on is still in the input. */
 function assertShape(html, re, what) {
   if (!re.test(html)) {
-    throw new Error(`integer-cell-golf: ${what} changed in input.html — this template no longer applies (pattern ${re})`);
+    throw new Error(`claude-fable-5: ${what} changed in input.html — this template no longer applies (pattern ${re})`);
   }
 }
 
@@ -88,7 +87,7 @@ export function minify(html) {
   }
 
   if (px !== cell * grid || px !== int(extract(html, /height="(\d+)"/, "canvas height"))) {
-    throw new Error(`integer-cell-golf: canvas size ${px} does not match CELL_SIZE*GRID_CELLS = ${cell * grid}`);
+    throw new Error(`claude-fable-5: canvas size ${px} does not match CELL_SIZE*GRID_CELLS = ${cell * grid}`);
   }
 
   // ── Step 2: derived values ───────────────────────────────────────────────

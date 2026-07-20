@@ -1,16 +1,16 @@
 import { mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 import QRCode from "qrcode";
-import { runAlgos, winner } from "./algos";
+import { runModels, winner } from "./models";
 import { INPUT_HTML, QR_CODE, toDataUrl } from "./config";
 
 const html = await Bun.file(INPUT_HTML).text();
 
 // The leaderboard winner's output is what ships in the QR code.
-const best = winner(await runAlgos(html));
+const best = winner(await runModels(html));
 const dataUrl = toDataUrl(best.output);
 
-console.log(`winner: ${best.algo} by ${best.model} — ${best.output.length} bytes`);
+console.log(`winner: ${best.model} — ${best.output.length} bytes`);
 
 // QRCode.toFile won't create the output directory, so make sure it exists.
 await mkdir(dirname(QR_CODE), { recursive: true });
