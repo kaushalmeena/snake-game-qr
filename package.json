@@ -4,9 +4,9 @@
   "description": "HTML snake game encoded in QR code",
   "type": "module",
   "scripts": {
-    "encode": "bun src/encode.ts",
-    "decode": "bun src/decode.ts",
-    "compare": "bun src/compare.ts",
+    "encode": "bun scripts/encode.ts",
+    "decode": "bun scripts/decode.ts",
+    "compare": "bun scripts/compare.ts",
     "typecheck": "tsc --noEmit"
   },
   "repository": {

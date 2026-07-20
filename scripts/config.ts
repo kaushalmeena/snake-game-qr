@@ -1,7 +1,12 @@
+import { resolve } from "node:path";
+
+/** Repo root, so paths resolve no matter which directory a script is run from. */
+const ROOT = resolve(import.meta.dir, "..");
+
 /** Shared file paths so encode and decode stay in sync. */
-export const INPUT_HTML = "input.html";
-export const OUTPUT_HTML = "output.html";
-export const QR_CODE = "qr-code.png";
+export const INPUT_HTML = resolve(ROOT, "input/input.html");
+export const OUTPUT_HTML = resolve(ROOT, "output/output.html");
+export const QR_CODE = resolve(ROOT, "output/qr-code.png");
 
 /**
  * Prefix for a base64 HTML data URL. Encoding the game as a data URL (instead

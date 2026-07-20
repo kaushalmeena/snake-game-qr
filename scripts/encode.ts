@@ -1,3 +1,5 @@
+import { mkdir } from "node:fs/promises";
+import { dirname } from "node:path";
 import QRCode from "qrcode";
 import { runAlgos, winner } from "./algos";
 import { INPUT_HTML, QR_CODE, toDataUrl } from "./config";
@@ -10,6 +12,8 @@ const dataUrl = toDataUrl(best.output);
 
 console.log(`winner: ${best.algo} by ${best.model} — ${best.output.length} bytes`);
 
+// QRCode.toFile won't create the output directory, so make sure it exists.
+await mkdir(dirname(QR_CODE), { recursive: true });
 await QRCode.toFile(QR_CODE, dataUrl);
 
 console.log(`${QR_CODE} saved! (${dataUrl.length} bytes encoded — scan to open the game)`);
