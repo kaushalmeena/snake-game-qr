@@ -39,6 +39,7 @@ export function minify(inputHtml) {
   // - Replaces `Math.` with `M.` to save bytes.
   // - Compresses `turn()` logic into `x != -X && y != -Y`.
   // - Handles opaque origin `localStorage` throw gracefully.
+  // - Score text inherits the snake fillStyle (as input.html does), so no color reset is needed.
   // - Single flat namespace without explicit declarations for state vars to save `let ` bytes.
   
   return `<body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:${bodyBg};touch-action:none"><canvas id=C width=${canvasW} height=${canvasH} style="border:${canvasBorder}"></canvas><script>
@@ -72,7 +73,7 @@ ontouchend=e=>{
   c.fillStyle="${foodColor}";c.fillRect(F.x*S,F.y*S,S-1,S-1);
   c.fillStyle="${snakeColor}";s.map(v=>c.fillRect(v.x*S,v.y*S,S-1,S-1));
   if(l>b){b=l;try{localStorage.setItem(L,b)}catch(e){}}
-  c.font="${font}";c.fillStyle="#000";c.fillText(l+" | best "+b,8,20)
+  c.font="${font}";c.fillText(l+" | best "+b,8,20)
 })();
 </script>`.replace(/\n\s*/g, '');
 }

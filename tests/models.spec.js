@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import {
   targets,
+  inputHtml,
   START_LEN,
   SWIPE_MIN,
   KEY,
@@ -15,6 +16,8 @@ import {
   steerToEat,
   detectWrap,
   forceCollision,
+  canvasDataUrl,
+  pixelDiff,
 } from "./harness.js";
 
 /**
@@ -41,6 +44,23 @@ for (const target of targets) {
       } finally {
         await context.close();
       }
+    });
+
+    test("paints the same canvas as input.html", async ({ browser }) => {
+      // Force food to a fixed cell (Math.random → 0) so both pages render the
+      // same frame, advance both to the same tick, then diff the canvases.
+      const shot = async (html) => {
+        const { context, page } = await openGame(browser, html, { fixedRandom: 0 });
+        try {
+          await waitFullLength(page);
+          return await canvasDataUrl(page);
+        } finally {
+          await context.close();
+        }
+      };
+      const [reference, actual] = await Promise.all([shot(inputHtml), shot(target.html)]);
+      const { count, total } = await pixelDiff(reference, actual);
+      expect(count, `${count} of ${total} pixels differ from input.html`).toBe(0);
     });
 
     test("keyboard steers the snake", async ({ browser }) => {

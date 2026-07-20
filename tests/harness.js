@@ -14,6 +14,8 @@ const MODELS_DIR = resolve(ROOT, "models");
 
 // ── Spec constants, extracted from input.html so the tests track the spec ──
 const input = await readFile(resolve(ROOT, "input/input.html"), "utf8");
+/** The readable reference page, for pixel-fidelity comparisons. */
+export const inputHtml = input;
 const num = (re, name) => {
   const m = input.match(re);
   if (!m) throw new Error(`test setup: could not find ${name} in input.html`);
@@ -227,14 +229,24 @@ export async function forceCollision(page, maxTicks = 60) {
  * HTML served for every request via routing, deterministic food, and optional
  * storage tampering. Returns { context, page, errors } — close the context.
  */
-export async function openGame(browser, html, { breakStorage = false, presetBest = null } = {}) {
+export async function openGame(browser, html, { breakStorage = false, presetBest = null, fixedRandom = null } = {}) {
   // hasTouch so dispatched TouchEvents carry a populated (iterable) touch list.
   const context = await browser.newContext({ hasTouch: true });
   const errors = [];
-  await context.addInitScript(() => {
-    let s = 12345;
-    Math.random = () => ((s = (s * 1103515245 + 12345) & 0x7fffffff), s / 0x7fffffff);
-  });
+  if (fixedRandom !== null) {
+    // Force Math.random to a constant. With 0, floor(0 * N) === 0 for every
+    // implementation regardless of how it consumes the RNG, so food lands on
+    // the same cell everywhere — the basis for the pixel-fidelity comparison.
+    await context.addInitScript((v) => {
+      Math.random = () => v;
+    }, fixedRandom);
+  } else {
+    // Seeded PRNG: deterministic food, reproducible runs.
+    await context.addInitScript(() => {
+      let s = 12345;
+      Math.random = () => ((s = (s * 1103515245 + 12345) & 0x7fffffff), s / 0x7fffffff);
+    });
+  }
   if (breakStorage) {
     await context.addInitScript(() => {
       Object.defineProperty(window, "localStorage", {
@@ -262,4 +274,27 @@ export async function openGame(browser, html, { breakStorage = false, presetBest
   await page.goto("http://localhost/");
   await scan(page); // first (synchronous) paint is present
   return { context, page, errors };
+}
+
+/** The canvas as a PNG data URL — deterministic for identical pixels. */
+export const canvasDataUrl = (page) => page.evaluate(() => document.querySelector("canvas").toDataURL());
+
+/**
+ * Count pixels whose RGB differs between two canvas PNG data URLs.
+ * @returns {Promise<{count:number, total:number}>}
+ */
+export async function pixelDiff(dataUrlA, dataUrlB) {
+  const { Jimp } = await import("jimp"); // lazy: keep jimp out of the config's import
+  const buf = (u) => Buffer.from(u.slice(u.indexOf(",") + 1), "base64");
+  const [a, b] = await Promise.all([Jimp.read(buf(dataUrlA)), Jimp.read(buf(dataUrlB))]);
+  if (a.bitmap.width !== b.bitmap.width || a.bitmap.height !== b.bitmap.height) {
+    return { count: Infinity, total: 0 };
+  }
+  const da = a.bitmap.data;
+  const db = b.bitmap.data;
+  let count = 0;
+  for (let i = 0; i < da.length; i += 4) {
+    if (da[i] !== db[i] || da[i + 1] !== db[i + 1] || da[i + 2] !== db[i + 2]) count++;
+  }
+  return { count, total: da.length / 4 };
 }

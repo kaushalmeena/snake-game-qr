@@ -30,7 +30,7 @@ Current standings (`npm run compare` regenerates this table):
 |---|-------|-----:|-----:|:-----------:|---------:|---------|
 | 1 | [Claude Fable 5](./models/claude-fable-5.js) | 999 B | 689 B | −39% | 1354 ch | v30 (137×137) |
 | 2 | [Claude Opus 4.8](./models/claude-opus-4.8.js) | 1003 B | 697 B | −38% | 1362 ch | v30 (137×137) |
-| 3 | [Gemini 1.5 Pro](./models/gemini-1.5-pro.js) | 1309 B | 808 B | −20% | 1770 ch | v35 (157×157) |
+| 3 | [Gemini 1.5 Pro](./models/gemini-1.5-pro.js) | 1290 B | 803 B | −21% | 1742 ch | v35 (157×157) |
 |  | html-minifier-terser *(baseline tool)* | 1627 B | 958 B | — | 2194 ch | v39 (173×173) |
 |  | `input.html` (raw) | 6885 B | 2241 B | +323% | 9202 ch | does not fit |
 
@@ -76,7 +76,7 @@ Rank every model's submission in `models/` (HTML bytes, gzipped bytes, savings v
 npm run compare
 ```
 
-Run the behavioral test suite — a headless-browser ([Playwright](https://playwright.dev/)) harness that plays each model's output and the baseline through the whole checklist (keyboard + swipe steering, swipe threshold, wrap-around, eating, growth, self-collision, reset, score updates, best-score persistence, and graceful degradation when `localStorage` throws):
+Run the behavioral test suite — a headless-browser ([Playwright](https://playwright.dev/)) harness that plays each model's output and the baseline through the whole checklist (keyboard + swipe steering, swipe threshold, wrap-around, eating, growth, self-collision, reset, score updates, best-score persistence, and graceful degradation when `localStorage` throws) plus a pixel-fidelity check that the rendered canvas matches `input.html`:
 
 ```bash
 npm test           # first run only: npx playwright install chromium

@@ -59,7 +59,8 @@ export default class ChecklistReporter {
       const name = ancestor(test, "describe")?.title ?? slug;
       if (!groups.has(slug)) groups.set(slug, { name, checks: [] });
       const ok = test.outcome() === "expected" || test.outcome() === "flaky";
-      const errors = test.results.flatMap((r) => (r.error ? [r.error.message?.split("\n")[0] ?? ""] : []));
+      // Dedupe: a retried failure repeats the same message across attempts.
+      const errors = [...new Set(test.results.flatMap((r) => (r.error ? [r.error.message?.split("\n")[0] ?? ""] : [])))];
       groups.get(slug).checks.push({ title: test.title, ok, errors });
       if (!order.includes(test.title)) order.push(test.title);
     }
