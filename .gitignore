@@ -1,6 +1,10 @@
 # Dependency directories
 node_modules/
 
+# Playwright
+test-results/
+playwright-report/
+
 # Misc
 .DS_Store
 .claude

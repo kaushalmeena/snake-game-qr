@@ -7,7 +7,7 @@
     "encode": "node scripts/encode.js",
     "decode": "node scripts/decode.js",
     "compare": "node scripts/compare.js",
-    "test": "node scripts/test-models.js"
+    "test": "playwright test"
   },
   "engines": {
     "node": ">=20.11"
@@ -30,6 +30,6 @@
     "qrcode": "^1.5.4"
   },
   "devDependencies": {
-    "playwright": "^1.61.1"
+    "@playwright/test": "^1.61.1"
   }
 }
