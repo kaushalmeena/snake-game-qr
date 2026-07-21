@@ -4,11 +4,6 @@
 
 **A complete, playable HTML Snake game squeezed into a single QR code** — with a leaderboard for the models that squeeze it smallest.
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-45b39d.svg)](LICENSE)
-&nbsp;![Node](https://img.shields.io/badge/node-%E2%89%A5%2020.11-566573.svg)
-&nbsp;![No server](https://img.shields.io/badge/no%20server-offline-52606d.svg)
-&nbsp;![Fits](https://img.shields.io/badge/fits%20in-1%20QR%20code-45b39d.svg)
-
 <img src="./assets/qrcode.png" alt="Scan to play Snake" width="500" />
 
 *📱 Scan it — the whole game unfolds right in your browser.*
