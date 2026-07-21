@@ -26,14 +26,14 @@ Current standings (`npm run compare` regenerates this table):
 
 <!-- leaderboard:start -->
 
-| # | model | html | gzip | vs baseline | QR code | writeup |
-|---|-------|-----:|-----:|:-----------:|---------|:-------:|
-| 1 | [claude-fable-5](./output/claude-fable-5/output.html) | 911 B | 671 B | −44% | v29 (133×133) | [writeup](./output/claude-fable-5/WRITEUP.md) |
-| 2 | [gemini-3.5-flash](./output/gemini-3.5-flash/output.html) | 1049 B | 689 B | −36% | v31 (141×141) | [writeup](./output/gemini-3.5-flash/WRITEUP.md) |
-| 3 | [gemini-1.5-pro](./output/gemini-1.5-pro/output.html) | 1061 B | 723 B | −35% | v31 (141×141) | [writeup](./output/gemini-1.5-pro/WRITEUP.md) |
-| 4 | [claude-opus-4.8](./output/claude-opus-4.8/output.html) | 1101 B | 698 B | −33% | v32 (145×145) | [writeup](./output/claude-opus-4.8/WRITEUP.md) |
-|  | html-minifier *(baseline tool)* | 1640 B | 965 B | — | v39 (173×173) | — |
-|  | `input.html` (raw) | 8719 B | 2998 B | +432% | does not fit | — |
+| # | model | html | gzip | vs baseline | QR code | output | writeup |
+|---|-------|-----:|-----:|:-----------:|---------|:------:|:-------:|
+| 1 | claude-fable-5 | 911 B | 671 B | −44% | v29 (133×133) | [output](./output/claude-fable-5/output.html) | [writeup](./output/claude-fable-5/WRITEUP.md) |
+| 2 | gemini-3.5-flash | 1049 B | 689 B | −36% | v31 (141×141) | [output](./output/gemini-3.5-flash/output.html) | [writeup](./output/gemini-3.5-flash/WRITEUP.md) |
+| 3 | gemini-1.5-pro | 1061 B | 723 B | −35% | v31 (141×141) | [output](./output/gemini-1.5-pro/output.html) | [writeup](./output/gemini-1.5-pro/WRITEUP.md) |
+| 4 | claude-opus-4.8 | 1101 B | 698 B | −33% | v32 (145×145) | [output](./output/claude-opus-4.8/output.html) | [writeup](./output/claude-opus-4.8/WRITEUP.md) |
+|  | html-minifier *(baseline tool)* | 1640 B | 965 B | — | v39 (173×173) | — | — |
+|  | `input.html` (raw) | 8717 B | 2997 B | +432% | does not fit | — | — |
 
 <!-- leaderboard:end -->
 

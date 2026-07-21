@@ -43,14 +43,14 @@ for (const row of rows) {
 
 // ── Rewrite the README leaderboard table ────────────────────────────────────
 const mdRow = (row) => {
-  const linked = row.outputPath ? `[${row.name}](${row.outputPath})` : row.name;
-  const label = row.note ? `${linked} *(${row.note})*` : linked;
+  const model = row.note ? `${row.name} *(${row.note})*` : row.name;
+  const output = row.outputPath ? `[output](${row.outputPath})` : "—";
   const writeup = row.writeupPath ? `[writeup](${row.writeupPath})` : "—";
-  return `| ${row.rank ?? ""} | ${label} | ${row.bytes} B | ${row.gzip} B | ${row.vs} | ${row.qr} | ${writeup} |`;
+  return `| ${row.rank ?? ""} | ${model} | ${row.bytes} B | ${row.gzip} B | ${row.vs} | ${row.qr} | ${output} | ${writeup} |`;
 };
 const table = [
-  "| # | model | html | gzip | vs baseline | QR code | writeup |",
-  "|---|-------|-----:|-----:|:-----------:|---------|:-------:|",
+  "| # | model | html | gzip | vs baseline | QR code | output | writeup |",
+  "|---|-------|-----:|-----:|:-----------:|---------|:------:|:-------:|",
   ...rows.map(mdRow),
 ].join("\n");
 
