@@ -1,10 +1,21 @@
-# Snake QR
+<div align="center">
 
-A complete, playable HTML Snake game squeezed into a single QR code — with a leaderboard for the models that squeeze it smallest.
+# 🐍 Snake QR
 
-Scan the code below with your phone and the Snake game opens right in your browser — no install, no server, no network. The entire game (HTML + CSS + JavaScript) lives inside the QR code, encoded as a `text/html` data URL so a scanner treats it as a link and offers to open it.
+**A complete, playable HTML Snake game squeezed into a single QR code** — with a leaderboard for the models that squeeze it smallest.
 
-![QR-Code](./assets/qrcode.png)
+[![License: MIT](https://img.shields.io/badge/license-MIT-45b39d.svg)](LICENSE)
+&nbsp;![Node](https://img.shields.io/badge/node-%E2%89%A5%2020.11-566573.svg)
+&nbsp;![No server](https://img.shields.io/badge/no%20server-offline-52606d.svg)
+&nbsp;![Fits](https://img.shields.io/badge/fits%20in-1%20QR%20code-45b39d.svg)
+
+<img src="./assets/qrcode.png" alt="Scan to play Snake" width="240" />
+
+*📱 Scan it — the whole game unfolds right in your browser.*
+
+</div>
+
+Scan the code above with your phone and the Snake game opens right in your browser — no install, no server, no network. The entire game (HTML + CSS + JavaScript) lives inside the QR code, encoded as a `text/html` data URL so a scanner treats it as a link and offers to open it.
 
 ## How it works
 
