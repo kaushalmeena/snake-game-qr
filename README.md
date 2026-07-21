@@ -9,7 +9,7 @@
 &nbsp;![No server](https://img.shields.io/badge/no%20server-offline-52606d.svg)
 &nbsp;![Fits](https://img.shields.io/badge/fits%20in-1%20QR%20code-45b39d.svg)
 
-<img src="./assets/qrcode.png" alt="Scan to play Snake" width="240" />
+<img src="./assets/qrcode.png" alt="Scan to play Snake" />
 
 *📱 Scan it — the whole game unfolds right in your browser.*
 
