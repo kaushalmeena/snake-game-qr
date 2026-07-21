@@ -4,7 +4,16 @@
     <meta charset="utf-8" />
     <title>Snake Game</title>
   </head>
+  <!--
+    Page: the canvas is centred with flexbox on a #d5dbdb background.
+    touch-action:none keeps swipes as game input instead of scrolling/zooming.
+  -->
   <body style="margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #d5dbdb; touch-action: none">
+    <!--
+      Board: a 512x512 canvas (512 == GRID_CELLS * CELL_SIZE == 32 * 16) with a
+      2px solid #566573 border (same color as the snake). The 512 literals in
+      the draw code below refer to this same size.
+    -->
     <canvas id="board" width="512" height="512" style="border: 2px solid #566573"></canvas>
     <script>
       // ── Board geometry ──────────────────────────────────────────────────
@@ -15,6 +24,7 @@
       const BOARD_COLOR = "#e5e7e9";
       const FOOD_COLOR = "#45b39d";
       const SNAKE_COLOR = "#566573";
+      const SCORE_COLOR = "#52606d"; // color of the score line text
 
       // ── Pacing: the game speeds up as the snake grows ───────────────────
       const BASE_TICK_MS = 120; // delay between moves at the start
@@ -24,7 +34,7 @@
       // ── Gameplay constants ──────────────────────────────────────────────
       const START_LENGTH = 4;
       const MIN_SWIPE_DISTANCE = 10; // pixels; anything shorter is a tap
-      const BEST_LENGTH_KEY = "snakeBestLength"; // localStorage key for the high score
+      const BEST_LENGTH_KEY = "bestLength"; // localStorage key for the high score
 
       const DIRECTIONS = {
         ArrowLeft: { x: -1, y: 0 },
@@ -71,9 +81,15 @@
 
       /** Start (or restart) a run: short snake in the middle, moving right. */
       function reset() {
+        // The snake is seeded as a SINGLE cell at the centre (16 == GRID_CELLS/2),
+        // but snakeLength is START_LENGTH (4). The tail is only ever trimmed,
+        // never padded, so the snake visibly GROWS from 1 to 4 cells over the
+        // first few ticks — it does not start already at full length.
         snake = [{ x: 16, y: 16 }];
-        stepX = 1;
+        stepX = 1; // start moving right
         stepY = 0;
+        // Food: two independent full-grid draws (x, then y). It is NOT checked
+        // against the snake or the previous food, so food can spawn on the snake.
         foodX = randomCell();
         foodY = randomCell();
         snakeLength = START_LENGTH;
@@ -112,7 +128,9 @@
 
       // ── Main loop ───────────────────────────────────────────────────────
       function tick() {
-        // Schedule first, so the early return on death cannot stop the loop.
+        // Schedule the next tick FIRST, so the early return on self-collision
+        // cannot stop the loop: after reset() the game simply auto-restarts.
+        // The delay shrinks as the snake grows, with MIN_TICK_MS as the floor.
         setTimeout(tick, Math.max(MIN_TICK_MS, BASE_TICK_MS - SPEEDUP_PER_CELL_MS * snakeLength));
 
         // Next head cell, wrapping around all four edges
@@ -121,7 +139,9 @@
           y: (snake[0].y + stepY + GRID_CELLS) % GRID_CELLS,
         };
 
-        // Ran into itself -> start over
+        // Ran into itself -> start over. Checked BEFORE the tail is popped this
+        // tick, so moving into the cell the tail is about to vacate still counts
+        // as a collision.
         if (snake.some((cell) => cell.x === head.x && cell.y === head.y)) {
           reset();
           return;
@@ -129,7 +149,8 @@
 
         snake.unshift(head);
 
-        // Ate the food -> grow and respawn it
+        // Ate the food -> grow and respawn it (same two-draw, no-avoidance
+        // placement as reset()).
         if (head.x === foodX && head.y === foodY) {
           snakeLength++;
           foodX = randomCell();
@@ -139,10 +160,12 @@
           snake.pop();
         }
 
-        // Draw: board, food, snake, then the score line on top
+        // Draw order: board background, food, snake, then the score on top.
         context.fillStyle = BOARD_COLOR;
-        context.fillRect(0, 0, 512, 512);
+        context.fillRect(0, 0, 512, 512); // 512 == GRID_CELLS * CELL_SIZE
         context.fillStyle = FOOD_COLOR;
+        // Each cell is drawn 1px smaller than CELL_SIZE, leaving a 1px gap.
+        // Those gaps ARE the grid — there are no separately drawn gridlines.
         context.fillRect(foodX * CELL_SIZE, foodY * CELL_SIZE, CELL_SIZE - 1, CELL_SIZE - 1);
         context.fillStyle = SNAKE_COLOR;
         for (const cell of snake) {
@@ -153,6 +176,11 @@
           bestLength = snakeLength;
           saveBestLength(bestLength);
         }
+        // Score line, drawn in SCORE_COLOR, set here so it does not depend on
+        // the fillStyle left over from the snake loop. The text is exactly
+        // "<len> | best <best>", at pixel (8, 20), in the 16px monospace font
+        // set once at startup.
+        context.fillStyle = SCORE_COLOR;
         context.fillText(`${snakeLength} | best ${bestLength}`, 8, 20);
       }
       tick();

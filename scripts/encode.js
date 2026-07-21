@@ -1,19 +1,21 @@
-import { mkdir, readFile } from "node:fs/promises";
-import { dirname } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import QRCode from "qrcode";
-import { runModels, winner } from "../lib/models.js";
-import { INPUT_HTML, QR_CODE, toDataUrl } from "../lib/config.js";
+import { computeRanking, winner } from "../lib/ranking.js";
+import { INPUT_HTML, ASSETS_DIR } from "../lib/config.js";
 
-const html = await readFile(INPUT_HTML, "utf8");
+/**
+ * Renders the leaderboard winner's page into assets/qrcode.png and records the
+ * winner in assets/winner.txt. `decode` recovers the page from the QR.
+ */
 
-// The leaderboard winner's output is what ships in the QR code.
-const best = winner(await runModels(html));
-const dataUrl = toDataUrl(best.output);
+const input = await readFile(INPUT_HTML, "utf8");
+const { models } = await computeRanking(input);
+const best = winner(models);
 
-console.log(`winner: ${best.model} — ${best.output.length} bytes`);
+await mkdir(ASSETS_DIR, { recursive: true });
+await QRCode.toFile(resolve(ASSETS_DIR, "qrcode.png"), best.dataUrl);
+await writeFile(resolve(ASSETS_DIR, "winner.txt"), `model: ${best.slug}\nbytes: ${best.bytes} B\n`);
 
-// QRCode.toFile won't create the output directory, so make sure it exists.
-await mkdir(dirname(QR_CODE), { recursive: true });
-await QRCode.toFile(QR_CODE, dataUrl);
-
-console.log(`${QR_CODE} saved! (${dataUrl.length} bytes encoded — scan to open the game)`);
+console.log(`winner: ${best.slug} — ${best.bytes} B`);
+console.log(`assets/qrcode.png + assets/winner.txt saved (${best.dataUrl.length} chars encoded — scan to open the game)`);

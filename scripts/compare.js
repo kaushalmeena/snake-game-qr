@@ -5,10 +5,11 @@ import { computeRanking } from "../lib/ranking.js";
 import { INPUT_HTML } from "../lib/config.js";
 
 /**
- * The leaderboard, to the terminal and the README. Ranks every model in
- * models/ by output size (with the baseline and raw input as reference floors)
+ * The leaderboard, to the terminal and the README. Ranks every submission in
+ * output/ by page size (with the baseline and raw input as reference floors)
  * and, after confirmation, rewrites the table between the README's leaderboard
- * markers. All measurement lives in lib/ranking.js.
+ * markers. Each model row links to its output.html and WRITEUP.md. All
+ * measurement lives in lib/ranking.js.
  */
 
 /** Ask a yes/no question; false when not attached to a terminal. */
@@ -28,28 +29,28 @@ const START = "<!-- leaderboard:start -->";
 const END = "<!-- leaderboard:end -->";
 
 const input = await readFile(INPUT_HTML, "utf8");
-const { models, baseline, raw, failed } = await computeRanking(input);
+const { models, baseline, raw } = await computeRanking(input);
 const rows = [...models, baseline, raw];
 
 // ── Console output ────────────────────────────────────────────────────────
-const con = (r, m, h, g, v, u, q) =>
-  console.log(r.padEnd(4) + m.padEnd(26) + h.padStart(7) + g.padStart(7) + v.padStart(7) + u.padStart(9) + `  ${q}`);
-con("#", "model", "html", "gzip", "vs", "dataURL", "QR code");
+const con = (r, m, h, g, v, q) =>
+  console.log(r.padEnd(4) + m.padEnd(26) + h.padStart(7) + g.padStart(7) + v.padStart(7) + `  ${q}`);
+con("#", "model", "html", "gzip", "vs", "QR code");
 for (const row of rows) {
   const name = row.name.replace(/`/g, "") + (row.note ? ` (${row.note})` : "");
-  con(`${row.rank ?? ""}`, name, `${row.bytes}B`, `${row.gzip}B`, row.vs.replace("−", "-"), `${row.urlLen}ch`, row.qr.replace("×", "x"));
+  con(`${row.rank ?? ""}`, name, `${row.bytes}B`, `${row.gzip}B`, row.vs.replace("−", "-"), row.qr.replace("×", "x"));
 }
-for (const r of failed) console.log(`\nFAILED ${r.file}: ${r.error}`);
 
 // ── Rewrite the README leaderboard table ────────────────────────────────────
 const mdRow = (row) => {
-  const linked = row.file ? `[${row.name}](${row.file})` : row.name;
+  const linked = row.outputPath ? `[${row.name}](${row.outputPath})` : row.name;
   const label = row.note ? `${linked} *(${row.note})*` : linked;
-  return `| ${row.rank ?? ""} | ${label} | ${row.bytes} B | ${row.gzip} B | ${row.vs} | ${row.urlLen} ch | ${row.qr} |`;
+  const writeup = row.writeupPath ? `[writeup](${row.writeupPath})` : "—";
+  return `| ${row.rank ?? ""} | ${label} | ${row.bytes} B | ${row.gzip} B | ${row.vs} | ${row.qr} | ${writeup} |`;
 };
 const table = [
-  "| # | model | html | gzip | vs baseline | data URL | QR code |",
-  "|---|-------|-----:|-----:|:-----------:|---------:|---------|",
+  "| # | model | html | gzip | vs baseline | QR code | writeup |",
+  "|---|-------|-----:|-----:|:-----------:|---------|:-------:|",
   ...rows.map(mdRow),
 ].join("\n");
 
@@ -68,5 +69,3 @@ if (!re.test(readme)) {
     console.log("README left unchanged.");
   }
 }
-
-if (failed.length > 0) process.exit(1);

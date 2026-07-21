@@ -1,308 +1,184 @@
-# Challenge: Shrink `input.html`
+# Challenge: Golf the Snake page
 
-You are an AI model competing on a code-golf/minification leaderboard.
+A friendly, cross-model code-golf challenge. You are given `input.html`: a
+readable, commented HTML Snake game. Your job is to produce the **smallest
+possible HTML page** that plays **exactly the same game**.
 
-Alongside this document you are given the full text of `input.html`: a readable, commented HTML Snake game.
+Your score is the raw ASCII byte length of the page you produce — lower is
+better. The page is base64-encoded into a `data:text/html;base64,...` URL and
+rendered as a QR code, so a smaller page makes a simpler QR. Every byte counts.
 
-Your task is **not to minify the existing source**. Your task is to generate the **smallest possible HTML page** that is **externally equivalent** to the supplied game.
-
-Your score is the **raw ASCII byte length** of the generated HTML string. Lower is better. The output is base64-encoded into a `data:text/html;base64,...` URL and rendered as a QR code, so **every byte matters**.
+This is not a "write a minifier" task. You are hand-crafting **one** final page
+for **this one** game. Hardcoding the answer is the whole point — that is what
+golf is. Rewrite it from scratch however you like.
 
 ---
 
 # Goal
 
-Implement an algorithm that reads `input.html`, derives its behavior and tunable parameters, and emits the smallest possible equivalent HTML page.
+Read `input.html`, understand exactly how the game behaves, and emit the
+smallest single HTML document that is **externally indistinguishable** from it in
+a modern Chromium browser. The output need not resemble the original in any way —
+different DOM, rendering, control flow, and state representation are all fair
+game. Only the observable behavior must match.
 
-The generated page does **not** need to resemble the original implementation.
+---
 
-Any semantics-preserving transformation is allowed, including:
+# What you're given
 
-* Complete rewrites
-* Different algorithms
-* Different rendering logic
-* Different DOM structure
-* Different event handling
-* Different state representation
-* Different control flow
-
-The only requirement is that the externally observable behavior remains equivalent.
+`input.html` is the specification. It is commented throughout — read the comments
+carefully, because several behaviors are subtle (see below). If any behavior is
+unclear, the running page is the source of truth.
 
 ---
 
 # Behavioral Equivalence
 
-When opened in a modern Chromium-compatible browser next to `input.html`, the generated page must be indistinguishable from the original in every externally observable way.
-
-This includes:
+Opened next to `input.html`, your page must be indistinguishable in every
+externally observable way.
 
 ## Visuals
 
-* Same canvas size
-* Same grid
-* Same border
-* Same page background
-* Same colors
-* Same rendered snake
-* Same food rendering
-* Same score display
+Same canvas size, grid, border, page background, colors, rendered snake, food,
+and score display.
 
-Implementation details are irrelevant.
-
----
+> **Re-encoding is allowed.** Emit any value in a shorter form that renders
+> identically (e.g. `#000000` → `#000` → `black`, `rgb(0,0,0)` → `#000`).
+> Equivalence is judged on pixels, not on literal bytes.
 
 ## Gameplay
 
-Must preserve all gameplay behavior, including:
+Preserve every gameplay behavior in the source: arrow-key steering, swipe
+steering, the swipe threshold (taps ignored), no reversing onto the neck,
+wrap-around on all four edges, food spawning, eat-to-grow, self-collision reset,
+starting position, starting direction, tick scheduling, the speed-up curve, and
+the minimum-speed floor.
 
-* Arrow-key steering
-* Swipe steering
-* Swipe threshold (taps ignored)
-* No reversing onto the snake's neck
-* Wrap-around on all four edges
-* Food spawning behavior
-* Eat-to-grow
-* Self-collision resets
-* Starting position
-* Starting direction
-* Tick scheduling
-* Tick speed progression
-* Minimum speed floor
-* Any other gameplay behavior present in the source
+Watch the subtle ones (all commented in the source):
 
----
+* The snake **grows from a single cell** up to the start length over the first
+  few ticks — it does not begin at full length.
+* Food is placed with **two independent full-grid draws** and does **not** avoid
+  the snake or the previous food; it can land on the snake. Do not add
+  "empty-cell" logic.
+* The next tick is scheduled **before** the self-collision check, so a reset
+  does not stop the loop — the game **auto-restarts**.
+* Cells are drawn 1px smaller than the cell size; those 1px gaps **are** the
+  grid. There are no separately drawn gridlines.
+* Self-collision is checked **before** the tail is removed that tick.
+
+> **Randomness — match the mechanism, not a sequence.** Food uses `Math.random`,
+> which is unseedable, so the verifier stubs it with a fixed stream in both pages
+> (see [Verification](#verification)). Your code must therefore consume random
+> values in the **same order and count** as the source: two draws per placement,
+> x before y, at reset and after each food eaten. Consuming them differently
+> desyncs the stream and fails the pixel diff even if the distribution matches.
 
 ## Score
 
-Must preserve:
-
-* Current length
-* Best length
-* Same labels
-* Same formatting
+Preserve current length, best length, the exact labels, and the exact formatting.
 
 Best score must:
 
-* Persist using the same `localStorage` key whenever storage is available.
-* Gracefully degrade when storage is unavailable.
+* Persist under the same `localStorage` key when storage is available.
+* Degrade gracefully when storage is unavailable.
 * Survive game resets.
-* Not survive page reloads if storage is unavailable.
+* Not survive reloads when storage is unavailable.
 
-The generated page must behave correctly when executed from a `data:` URL with an opaque origin, where merely accessing `localStorage` throws. Every storage access must therefore be protected exactly as the original does.
-
----
-
-# Deliverable
-
-Produce a single JavaScript ES module.
-
-Requirements:
-
-* Plain JavaScript (no TypeScript syntax)
-* Runs on Node.js (the harness imports it as an ES module)
-* Filename is **your model's name in kebab-case** — one file per model, so a new
-  submission from the same model replaces the old one
-
-Example:
-
-`your-model-name.js`
-
-Export:
-
-```js
-export const meta = {
-  model: "Your Model Name"
-};
-
-export function minify(inputHtml) {
-  ...
-}
-```
-
-`minify()`:
-
-* accepts the full contents of `input.html`
-* returns the generated HTML string
-* returning `Promise<string>` is also acceptable
+The page runs from a `data:` URL with an opaque origin, where merely **accessing**
+`localStorage` throws. Guard every storage access so behavior is observably
+equivalent to the original (the source wraps each access in `try/catch`).
 
 ---
 
 # Rules
 
-## 1. `input.html` is the specification
-
-Treat the supplied source as the specification—not as text to hardcode.
-
-Every gameplay-relevant value emitted by your algorithm must ultimately be derived from the supplied input.
-
-This includes (but is not limited to):
-
-* Colors
-* Canvas dimensions
-* Border width
-* Grid size
-* Starting position
-* Starting direction
-* Tick timing
-* Speed curve
-* Minimum delay
-* Score labels
-* Storage key
-* Swipe threshold
-* Any future tunable constants
-
-Do **not** duplicate these values inside your algorithm.
-
-If the supplied source changes, the generated page should automatically change with it.
+1. **Self-contained.** One HTML document, no external resources, no network. It
+   must run correctly as `data:text/html;base64,...`.
+2. **Pure ASCII.** If the source renders a non-ASCII glyph (e.g. an emoji), keep
+   the rendered glyph but escape it (`\uXXXX` or an HTML entity). Never drop or
+   substitute it.
+3. **Guard storage.** Every `localStorage` access in `try/catch`, as above.
+4. **Behavior first.** When a trick would change observable behavior, don't use
+   it — correctness beats bytes.
 
 ---
 
-## 2. Detect assumptions
+# Deliverable
 
-You may infer higher-level structure from the source—for example recognizing repeated logic or identifying the game model—but every emitted value must still originate from the supplied input.
+Two files, in this order:
 
-If the source violates one of your assumptions:
+### 1. `output.html` (scored)
 
-* throw an `Error`
-* explain exactly which assumption failed
+Exactly one fenced code block, tagged `html`, containing the **entire** page and
+nothing else — this is saved as `output.html`. Its raw ASCII byte length is your
+score.
 
-Never silently emit stale output.
-
----
-
-## 3. Optimize globally
-
-Your objective is the **smallest generated HTML**, not the smallest algorithm.
-
-Prefer transformations that reduce the emitted page even if they make the algorithm larger.
-
-A complete regeneration is often smaller than preserving source structure.
-
----
-
-## 4. Freedom of implementation
-
-You are encouraged to regenerate the page from first principles. Any transformation is acceptable as long as externally observable behavior is preserved. The techniques are yours to find.
-
----
-
-## 5. Deterministic
-
-Given identical input:
-
-* identical output
-* byte-for-byte
-
----
-
-## 6. Self-contained
-
-No:
-
-* network access
-* file I/O
-* subprocesses
-* shelling out
-* external libraries at runtime
-
----
-
-## 7. Output requirements
-
-Generated HTML must be:
-
-* pure ASCII
-* a single HTML document
-* self-contained
-* no external resources
-
-It must execute correctly as:
-
+```html
+<!doctype html>...your golfed page...
 ```
-data:text/html;base64,...
+
+### 2. `WRITEUP.md` (displayed, not scored)
+
+Right after the code block, a short write-up in this exact skeleton so entries
+are comparable across models. Keep the headings verbatim.
+
+```md
+**Model:** your-model-name        <!-- kebab-case identifier for this entry -->
+
+**Approach:** 2-3 sentences on your overall strategy.
+
+**Reductions:** ordered list, biggest wins first. For each: what you did, bytes
+saved, and any assumption it relies on.
+
+**Proudest trick:** the one you'd show off.
+
+**Known risks / couldn't crack:** anything you're unsure preserves behavior, or
+savings you spotted but couldn't land.
 ```
 
 ---
 
-## 8. Performance
+# Verification
 
-`minify()` should normally finish within a few seconds.
+Entries are checked for behavioral equivalence (correctness gates the
+leaderboard; it is not itself scored):
 
----
-
-## 9. Explain the algorithm
-
-Document the algorithm with concise comments.
-
-The comments exist only inside your algorithm file—they must never appear in the generated HTML.
-
-Comments should explain only non-obvious transformations, including:
-
-* what the transformation does
-* why it reduces bytes
-* which assumption it relies on
-* why that assumption preserves behavior
-
-Structure the algorithm so it is easy to audit.
-
-Suggested pipeline:
-
-1. Extract constants
-2. Validate assumptions
-3. Derive game parameters
-4. Generate compact JavaScript
-5. Emit HTML
-
----
-
-# Optimization Guidance
-
-Think of this as **program synthesis**, not source minification.
-
-Do not preserve source layout or implementation unless doing so produces a smaller final page.
-
-Optimize the generated HTML globally rather than performing local edits to the original source.
-
----
-
-# Optimization Checklist
-
-Before finishing, revisit the generated HTML and keep searching for additional semantics-preserving reductions until no further savings can be found.
-
----
-
-# Priority Order
-
-When trade-offs exist, prioritize in this order:
-
-1. Correct behavioral equivalence
-2. Smallest generated HTML
-3. Robust extraction from `input.html`
-4. Deterministic output
-5. Algorithm simplicity
-6. Runtime performance
+1. **Load from a real `data:` URL** in headless Chromium, so the opaque-origin
+   `localStorage` path is exercised.
+2. **Stub `Math.random`** with a fixed stream in both pages so food placement is
+   reproducible. Note the first painted frame is already *after* one move
+   (schedule → move → draw), and `reset()` draws food before the first paint, so
+   there is no resting start frame.
+3. **Pixel-diff** the canvas against the original frame-by-frame over a fixed
+   number of ticks with a fixed input script.
+4. **Drive gameplay** with synthetic keyboard and touch events: steering, swipe
+   threshold, neck-reversal, wrap-around, eat-to-grow, self-collision reset.
+5. **Check score/storage**: persistence, reset survival, graceful degradation,
+   and reload behavior, with storage both available and throwing.
 
 ---
 
 # Scoring
 
-Your module will be imported into a harness.
+* **Primary:** raw ASCII byte length of the page (lower is better).
+* **Tiebreak:** QR code version of the resulting `data:text/html;base64,...` URL
+  (base64 length ≈ 1.34× raw; smaller version wins).
 
-The harness will:
+An entry is out if it emits invalid or non-ASCII HTML, depends on external
+resources, or fails behavioral equivalence.
 
-1. Import `meta`.
-2. Import `minify`.
-3. Execute `minify(inputHtml)`.
-4. Measure the raw ASCII byte length of the returned HTML.
-5. Verify correctness.
-6. Rank submissions by output size and resulting QR code version.
+---
 
-A submission is disqualified if it:
+# Optimization Checklist
 
-* throws unexpectedly
-* returns a non-string
-* emits invalid HTML
-* produces non-ASCII output
-* fails behavioral equivalence
-* depends on external resources
-* emits stale output because assumptions changed
+Keep hunting for semantics-preserving reductions until none remain. Common wins:
+
+* Drop the doctype/optional tags/optional quotes/optional attributes the parser
+  fills in anyway.
+* Collapse whitespace; put everything on one line.
+* Shorten colors and numbers to equivalent shorter forms.
+* Minify identifiers; reuse variables; fold repeated expressions.
+* Prefer a bare inline `<script>` and a single `<canvas>` over extra scaffolding.
+* Exploit default values and implicit coercions the source relies on.
+* Escape non-ASCII compactly rather than restructuring to avoid it.

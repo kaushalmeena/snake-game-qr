@@ -1,5 +1,5 @@
 {
-  "name": "snake-golf",
+  "name": "snake-qr",
   "version": "1.0.0",
   "description": "Models compete to encode a playable HTML snake game into a QR code",
   "type": "module",
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kaushalmeena/snake-golf.git"
+    "url": "git+https://github.com/kaushalmeena/snake-qr.git"
   },
   "keywords": [
     "snake",
@@ -24,7 +24,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "html-minifier-terser": "^7.2.0",
+    "html-minifier-next": "^7.5.0",
     "jimp": "^1.6.1",
     "jsqr": "^1.4.0",
     "qrcode": "^1.5.4"

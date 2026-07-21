@@ -1,7 +1,7 @@
 import { defineConfig } from "@playwright/test";
-import { targets } from "./tests/harness.js";
+import { targets } from "./tests/helpers.js";
 
-/** Escape a model name for use inside a RegExp. */
+/** Escape a slug for use inside a RegExp. */
 const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 export default defineConfig({
@@ -12,8 +12,8 @@ export default defineConfig({
   retries: 1,
   reporter: [["./tests/reporter.js"]],
   // One project per model, so the suite runs and reports per model. Run a
-  // single model with:  npx playwright test --project=claude-fable-5
-  // The project is named by slug; its grep matches the model's describe title
-  // (the pretty name), which the slug project-prefix can't collide with.
-  projects: targets.map((t) => ({ name: t.slug, grep: new RegExp(escape(t.name)) })),
+  // single model with:  npx playwright test --project=gemini-3.5-flash
+  // The project is named by slug and selects its tests by the @<slug> tag —
+  // a tag the slug project-name prefix can't contain, so there's no collision.
+  projects: targets.map((t) => ({ name: t.slug, grep: new RegExp(`@${escape(t.slug)}(?![\\w.-])`) })),
 });

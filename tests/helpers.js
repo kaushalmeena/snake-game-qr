@@ -1,16 +1,16 @@
-import { readFile, readdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { minify as baselineMinify, label as baselineLabel } from "../lib/baseline.js";
+import { readEntries } from "../lib/entries.js";
 
 /**
  * Shared black-box test helpers for the model behavioral suite. Everything
  * here reads only the <canvas> pixels and localStorage — never a model's
  * internal variables — so the same checks hold for any faithful
- * implementation. The Playwright spec in models.spec.js drives these.
+ * implementation. The Playwright spec in snake.spec.js drives these.
  */
 
 const ROOT = resolve(import.meta.dirname, "..");
-const MODELS_DIR = resolve(ROOT, "models");
 
 // ── Spec constants, extracted from input.html so the tests track the spec ──
 const input = await readFile(resolve(ROOT, "input/input.html"), "utf8");
@@ -30,7 +30,7 @@ export const KEY = num(/BEST_LENGTH_KEY = "([^"]+)"/, "best-length key");
 export const CENTER = { x: +num(/x: (\d+), y: \d+ \}\]/, "start x"), y: +num(/x: \d+, y: (\d+) \}\]/, "start y") };
 const SNAKE = num(/SNAKE_COLOR = "#([0-9a-f]+)"/, "snake color");
 const FOOD = num(/FOOD_COLOR = "#([0-9a-f]+)"/, "food color");
-const BOARD = num(/BOARD_COLOR = "#([0-9a-f]+)"/, "board color");
+const SCORE = num(/SCORE_COLOR = "#([0-9a-f]+)"/, "score color");
 
 const ARROW = { "1,0": "ArrowRight", "-1,0": "ArrowLeft", "0,1": "ArrowDown", "0,-1": "ArrowUp" };
 export const xy = (c) => ({ x: c % GRID, y: Math.floor(c / GRID) });
@@ -40,25 +40,20 @@ const ringDir = (a, b) => {
   return d === 0 ? 0 : d <= GRID / 2 ? 1 : -1;
 };
 
-// ── Targets: every model submission + the baseline control ───────────────────
+// ── Targets: every submission's output.html + the baseline control ───────────
+// slug names the Playwright project; name titles the tests. Keeping them
+// distinct lets the per-project grep match the test title without also matching
+// the project-name prefix Playwright prepends.
 async function buildTargets() {
-  const files = (await readdir(MODELS_DIR)).filter((f) => f.endsWith(".js")).sort();
-  const targets = [];
-  for (const file of files) {
-    const mod = await import(pathToFileURL(resolve(MODELS_DIR, file)).href);
-    // slug (the filename) names the Playwright project; name (meta.model) titles
-    // the tests. Keeping them distinct lets the per-project grep match the test
-    // title without also matching the project-name prefix Playwright prepends.
-    targets.push({ slug: file.replace(/\.js$/, ""), name: mod.meta?.model ?? file, html: await mod.minify(input) });
-  }
-  const base = await import(pathToFileURL(resolve(ROOT, "lib/baseline.js")).href);
-  targets.push({ slug: "baseline", name: `${base.label} (baseline)`, html: await base.minify(input) });
+  const submissions = await readEntries();
+  const targets = submissions.map((s) => ({ slug: s.slug, name: s.name, html: s.html }));
+  targets.push({ slug: "baseline", name: `${baselineLabel} (baseline)`, html: await baselineMinify(input) });
   return targets;
 }
 export const targets = await buildTargets();
 
 // ── In-page canvas reader ────────────────────────────────────────────────────
-function scanPage({ grid, cell, snakeHex, foodHex, boardHex }) {
+function scanPage({ grid, cell, snakeHex, foodHex, scoreHex }) {
   const g = document.querySelector("canvas").getContext("2d");
   const d = g.getImageData(0, 0, grid * cell, grid * cell).data;
   const hex = (x, y) => {
@@ -73,19 +68,22 @@ function scanPage({ grid, cell, snakeHex, foodHex, boardHex }) {
       const px = cx * cell + (cell >> 1);
       const py = cy * cell + (cell >> 1);
       const c = hex(px, py);
-      const masked = px < 160 && py < 28; // score-text region
+      // The score line is drawn on top of the top-left, so a snake cell there
+      // can be hidden by the score text — skip that region for snake detection.
+      const masked = px < 160 && py < 28;
       if (c === snakeHex && !masked) snake.push(cy * grid + cx);
       else if (c === foodHex) food.push(cy * grid + cx);
     }
   }
-  // Any non-background ink in the score region, to detect score redraws
-  // regardless of the text color a model happens to use.
-  for (let y = 0; y < 28; y++) for (let x = 0; x < 160; x++) if (hex(x, y) !== boardHex) scoreSig += x * 31 + y;
+  // Signature of the score line: count its SCORE_COLOR pixels in the top-left
+  // region, so it changes exactly when the score's text does (and ignores any
+  // food/snake passing through the region).
+  for (let y = 0; y < 28; y++) for (let x = 0; x < 160; x++) if (hex(x, y) === scoreHex) scoreSig += x * 31 + y;
   return { snake: snake.sort((a, b) => a - b), food, scoreSig };
 }
 
 export const scan = (page) =>
-  page.evaluate(scanPage, { grid: GRID, cell: CELL, snakeHex: SNAKE, foodHex: FOOD, boardHex: BOARD });
+  page.evaluate(scanPage, { grid: GRID, cell: CELL, snakeHex: SNAKE, foodHex: FOOD, scoreHex: SCORE });
 
 /**
  * Advance the game by exactly one tick and return the new scan. Time is faked
@@ -135,8 +133,13 @@ export async function swipe(page, dx, dy) {
   await page.evaluate(
     ({ dx, dy }) => {
       const t = (x, y) => new Touch({ identifier: 0, target: document.body, clientX: x, clientY: y });
-      dispatchEvent(new TouchEvent("touchstart", { touches: [t(200, 200)], bubbles: true }));
-      dispatchEvent(new TouchEvent("touchend", { changedTouches: [t(200 + dx, 200 + dy)], bubbles: true }));
+      const start = t(200, 200);
+      const end = t(200 + dx, 200 + dy);
+      // Match real touch events: touchstart carries the new touch in BOTH
+      // touches and changedTouches; touchend has no active touches, only the
+      // lifted one in changedTouches. (Handlers may read either list.)
+      dispatchEvent(new TouchEvent("touchstart", { touches: [start], changedTouches: [start], bubbles: true }));
+      dispatchEvent(new TouchEvent("touchend", { touches: [], changedTouches: [end], bubbles: true }));
     },
     { dx, dy }
   );
@@ -229,24 +232,17 @@ export async function forceCollision(page, maxTicks = 60) {
  * HTML served for every request via routing, deterministic food, and optional
  * storage tampering. Returns { context, page, errors } — close the context.
  */
-export async function openGame(browser, html, { breakStorage = false, presetBest = null, fixedRandom = null } = {}) {
+export async function openGame(browser, html, { breakStorage = false, presetBest = null } = {}) {
   // hasTouch so dispatched TouchEvents carry a populated (iterable) touch list.
   const context = await browser.newContext({ hasTouch: true });
   const errors = [];
-  if (fixedRandom !== null) {
-    // Force Math.random to a constant. With 0, floor(0 * N) === 0 for every
-    // implementation regardless of how it consumes the RNG, so food lands on
-    // the same cell everywhere — the basis for the pixel-fidelity comparison.
-    await context.addInitScript((v) => {
-      Math.random = () => v;
-    }, fixedRandom);
-  } else {
-    // Seeded PRNG: deterministic food, reproducible runs.
-    await context.addInitScript(() => {
-      let s = 12345;
-      Math.random = () => ((s = (s * 1103515245 + 12345) & 0x7fffffff), s / 0x7fffffff);
-    });
-  }
+  // Seeded PRNG, identical seed in every page: two faithful pages then consume
+  // the SAME random stream, so their food placement matches only if they draw
+  // in the same order and count — the basis for the frame-for-frame diff.
+  await context.addInitScript(() => {
+    let s = 12345;
+    Math.random = () => ((s = (s * 1103515245 + 12345) & 0x7fffffff), s / 0x7fffffff);
+  });
   if (breakStorage) {
     await context.addInitScript(() => {
       Object.defineProperty(window, "localStorage", {
